@@ -1,0 +1,562 @@
+{
+  "name": "Research HR and write Blog Turbo",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "id": "f453b5ac-8a49-4913-ac8d-b1ca8f77bcf9",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        400,
+        -32
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "model": "sonar-pro",
+        "messages": {
+          "message": [
+            {
+              "content": "=Research the latest web contents from reliable sources about \"{{ $json['Topic (EN)'] }}\" that will be interesting to blog about. Choose and return only the most interesting contents for the blog intended for SME owners, non‑HR professionals, and job seekers/employees."
+            }
+          ]
+        },
+        "options": {
+          "searchRecency": "week"
+        },
+        "requestOptions": {}
+      },
+      "id": "7db6fd7f-5c9a-43e1-8af0-cb0176f2c02c",
+      "name": "Perplexity - Blog Topic Research Node",
+      "type": "n8n-nodes-base.perplexity",
+      "position": [
+        848,
+        -32
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "perplexityApi": {
+          "id": "8Lw9u6J4NpFwZNa7",
+          "name": "Perplexity account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-sonnet-4-20250514",
+          "mode": "list",
+          "cachedResultName": "Claude Sonnet 4"
+        },
+        "options": {}
+      },
+      "id": "67f0106f-6d1e-4606-b75a-943872204546",
+      "name": "Anthropic Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "position": [
+        1072,
+        192
+      ],
+      "typeVersion": 1.3,
+      "credentials": {
+        "anthropicApi": {
+          "id": "UhuF1cvIu3iIFVzc",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.choices[0].message.content }}\n\nWrite a blog post from the prespective of job seekers.",
+        "options": {
+          "systemMessage": "={{ $('Get row(s) in sheet').item.json['System Prompt'] }}\n\nWrite in British English."
+        }
+      },
+      "id": "7bd15463-1996-498b-9303-caf39c4ea6e7",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        1104,
+        -32
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Perplexity - Blog Topic Research Node').item.json.id }}"
+      },
+      "id": "4f333421-eb80-4227-a97d-373434cfe3c8",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        1200,
+        192
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "model": "sonar-pro",
+        "messages": {
+          "message": [
+            {
+              "content": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('message0_Text', ``, 'string') }}"
+            }
+          ]
+        },
+        "simplify": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Simplify_Output', ``, 'boolean') }}",
+        "options": {},
+        "requestOptions": {}
+      },
+      "id": "f2c8fa27-f220-40b0-a2c0-d0479c42a900",
+      "name": "Perplexity Search Tool",
+      "type": "n8n-nodes-base.perplexityTool",
+      "position": [
+        1328,
+        192
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "perplexityApi": {
+          "id": "8Lw9u6J4NpFwZNa7",
+          "name": "Perplexity account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "🧠 AI-Powered Blog Post Generator\nCategory: Content Automation / AI Writing / Marketing\n\nDescription:\nThis automated workflow helps you generate fresh, SEO-optimized blog posts daily using AI tools—perfect for solo creators, marketers, and content teams looking to stay on top of the latest AI trends without manual research or writing.\n\nFor more of this build and step-by-step tutorials, check out:\nhttps://www.youtube.com/@Automatewithmarc\n\nHere’s how it works:\n\nSchedule Trigger kicks off the workflow daily (or at your preferred interval).\n\nPerplexity AI Node researches the most interesting recent AI news tailored for a non-technical audience.\n\nAI Agent (Claude via Anthropic) turns that news into a full-length blog post based on a structured prompt that includes title, intro, 3+ section headers, takeaway, and meta description—designed for clarity, engagement, and SEO.\n\nOptional Memory & Perplexity Tool Nodes enhance the agent's responses by allowing it to clarify facts or fetch more context.\n\nGoogle Docs Node automatically saves the final blog post to your selected document—ready for review, scheduling, or publishing.\n\nKey Features:\n\nCombines Perplexity AI + Claude AI (Anthropic) for research + writing\n\nBuilt-in memory and retrieval logic for deeper contextual accuracy\n\nNon-technical, friendly writing style ideal for general audiences\n\nOutput saved directly to Google Docs\n\nFully no-code, customizable, and extendable\n\nUse Cases:\n\nAutomate weekly blog content for your newsletter or site\n\nRepurpose content into social posts or scripts\n\nKeep your brand relevant in the fast-moving AI landscape\n\nSetup Requirements:\n\nPerplexity API Key\n\nAnthropic API Key\n\nGoogle Docs (OAuth2 connected)",
+        "height": 1020,
+        "width": 620
+      },
+      "id": "fbdfedf4-e247-42bc-9d5e-9ebf2e3cd957",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -560,
+        -240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "jsCode": "function extractTitle(markdown) {\n  // ^\\s*#\\s+   ：行首可有空白，接一个 # 和至少一个空格\n  // (.+?)      ：非贪婪捕获标题内容\n  // (?:\\r?\\n|$)：直到换行符或文本结束\n  const match = markdown.match(/^\\s*#\\s+(.+?)(?:\\r?\\n|$)/m);\n  return match ? match[1].trim() : '';\n}\n// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.title = extractTitle(item.json.output);\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1536,
+        -32
+      ],
+      "id": "bce89e49-d320-44a1-8592-8053504c582f",
+      "name": "Extract Title"
+    },
+    {
+      "parameters": {
+        "folderId": "=1SBHQpeTfnoOjbvsVoi8d-hNsz3dFOYLu",
+        "title": "={{ $json.title }}"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        -32
+      ],
+      "id": "74d62b7d-2598-4eb5-bc8b-aa88100a9b7f",
+      "name": "Create Blog Document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "66sK8nRtUrlJ20JB",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $json.id }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "={{ $('Extract Title').item.json.output }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        1984,
+        64
+      ],
+      "id": "cca84469-e921-470a-b0ee-d7875385faa8",
+      "name": "Write Blog to document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "66sK8nRtUrlJ20JB",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1cqf4dLcTLAp-j4MaeZjiuT3KX4JDuSAQ06W41yXrh70",
+          "mode": "list",
+          "cachedResultName": "UK_Employment_Law_Topics_2025_with_StyledPrompts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cqf4dLcTLAp-j4MaeZjiuT3KX4JDuSAQ06W41yXrh70/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 890917755,
+          "mode": "list",
+          "cachedResultName": "En",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cqf4dLcTLAp-j4MaeZjiuT3KX4JDuSAQ06W41yXrh70/edit#gid=890917755"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Status",
+              "lookupValue": "Plan"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        624,
+        -32
+      ],
+      "id": "b22e5086-8a11-4e36-970e-f921ae7cedc5",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "1ug4IE5DqnwASZ3w",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1cqf4dLcTLAp-j4MaeZjiuT3KX4JDuSAQ06W41yXrh70",
+          "mode": "list",
+          "cachedResultName": "UK_Employment_Law_Topics_2025_with_StyledPrompts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cqf4dLcTLAp-j4MaeZjiuT3KX4JDuSAQ06W41yXrh70/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 890917755,
+          "mode": "list",
+          "cachedResultName": "En",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cqf4dLcTLAp-j4MaeZjiuT3KX4JDuSAQ06W41yXrh70/edit#gid=890917755"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Get row(s) in sheet').item.json.row_number }}",
+            "Blog Title": "={{ $json.name }}",
+            "FileID": "={{ $json.id }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Category (EN)",
+              "displayName": "Category (EN)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "序号",
+              "displayName": "序号",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Topic (EN)",
+              "displayName": "Topic (EN)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "SME Impact (EN)",
+              "displayName": "SME Impact (EN)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Affected Industries (EN)",
+              "displayName": "Affected Industries (EN)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "AI Impact (EN)",
+              "displayName": "AI Impact (EN)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "AI Use Case (EN)",
+              "displayName": "AI Use Case (EN)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "System Prompt",
+              "displayName": "System Prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "User Prompt",
+              "displayName": "User Prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Blog Title",
+              "displayName": "Blog Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "FileID",
+              "displayName": "FileID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        1984,
+        -128
+      ],
+      "id": "5dfca580-9e9f-49a1-b89b-5bf8a10d15c6",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "1ug4IE5DqnwASZ3w",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Extract Title",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity Search Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity - Blog Topic Research Node": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Title": {
+      "main": [
+        [
+          {
+            "node": "Create Blog Document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Blog Document": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Write Blog to document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Perplexity - Blog Topic Research Node",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9ef71795-e5c5-4cff-86a4-a6cfdf5e1250",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3f76ab92f54cb9ba3e340bfc427e6bc499c8d2bdb1c233070b099bd4bea6edfb"
+  },
+  "id": "ffPlOLacTAHLc0vs",
+  "tags": [
+    {
+      "createdAt": "2025-07-18T16:10:15.215Z",
+      "updatedAt": "2025-07-18T16:10:15.215Z",
+      "id": "Kfys3gdKi3GcTQ6m",
+      "name": "Prd"
+    }
+  ]
+}

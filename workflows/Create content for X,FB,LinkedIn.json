@@ -1,0 +1,978 @@
+{
+  "name": "Create content for X,FB,LinkedIn",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "id": "3655a004-b4a9-4c35-bef7-e0ead1e54b38",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        0,
+        -128
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1cqf4dLcTLAp-j4MaeZjiuT3KX4JDuSAQ06W41yXrh70",
+          "mode": "list",
+          "cachedResultName": "UK_Employment_Law_Topics_2025_with_StyledPrompts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cqf4dLcTLAp-j4MaeZjiuT3KX4JDuSAQ06W41yXrh70/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 890917755,
+          "mode": "list",
+          "cachedResultName": "En",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cqf4dLcTLAp-j4MaeZjiuT3KX4JDuSAQ06W41yXrh70/edit#gid=890917755"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Status",
+              "lookupValue": "Generated"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        224,
+        -128
+      ],
+      "id": "fe0fdacb-8f55-4eb4-bbb2-a0a1b30256ef",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "1ug4IE5DqnwASZ3w",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "={{ $json.FileID }}"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        448,
+        -128
+      ],
+      "id": "645ff5d1-f421-478f-ae96-50a7b17d162e",
+      "name": "Get a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "66sK8nRtUrlJ20JB",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=**Task**  \nReimagine the content below as a punchy, standalone post for X (formerly Twitter).\n\n**Output Requirements**  \n• Maximum 280 characters.  \n• Rewrite it in a bold, clear, and conversational tone — not just a summary, but a fresh take that captures attention.  \n• You may simplify, reframe, or reshape the content, as long as the core message stays intact.  \n• Avoid hashtags, emojis, and any mention of the original text or this prompt.\n\n**Input**  \n{{ $json.content }}\n\n**Your output (X-ready post):**\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        672,
+        -320
+      ],
+      "id": "0c270aa3-7a31-4746-9249-03bf4466a9b5",
+      "name": "Summaries For X",
+      "credentials": {
+        "openAiApi": {
+          "id": "00jAlINW73KFM6AA",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are a professional LinkedIn content strategist. Your role is to polish user-provided draft content into a compelling, concise, and well-structured LinkedIn post.\n\nAudience: Professionals, business owners, and decision-makers  \nTone: Clear, confident, and conversational — suitable for LinkedIn  \nLength: 3–5 short paragraphs or 1–2 with bullet points  \nObjective: Inform, engage, and spark interest or thoughtful reactions  \nAvoid: Jargon, fluff, or overly promotional language  \nEncourage: A clear CTA (question, insight, or prompt for discussion)\n\nFormat:  \n- Start with a strong hook or insight  \n- Clarify the main point in plain language  \n- Use formatting or bullet points where helpful  \n- End with a short takeaway or a question to encourage comments",
+              "role": "system"
+            },
+            {
+              "content": "=Here's the draft I need help polishing for LinkedIn:\n\n{{ $json.content }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        672,
+        -128
+      ],
+      "id": "ffc3f3af-12d8-4656-bdd8-957aad7338a4",
+      "name": "Polish content for LinkedIn",
+      "credentials": {
+        "openAiApi": {
+          "id": "00jAlINW73KFM6AA",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=**Task**  \nRecreate the content below into a compelling, Facebook-ready post.\n\n**Output Requirements**  \n• 1–2 short paragraphs.  \n• Rewrite the message in a fresh, engaging, and conversational tone — not just summarised, but reimagined.  \n• Highlight the core message or insight, and express it like you're talking to a smart friend.  \n• You can simplify, reframe, or reshape the structure, but stay true to the original intent.  \n• No hashtags, no emoji, no reference to the original source or prompt.\n\n**Input**  \n{{ $json.content }}\n\n**Your output (Facebook-ready post):**\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        672,
+        64
+      ],
+      "id": "224cff24-3d93-425a-9404-6937065df43f",
+      "name": "Recreate For FB",
+      "credentials": {
+        "openAiApi": {
+          "id": "00jAlINW73KFM6AA",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1cqf4dLcTLAp-j4MaeZjiuT3KX4JDuSAQ06W41yXrh70",
+          "mode": "list",
+          "cachedResultName": "UK_Employment_Law_Topics_2025_with_StyledPrompts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cqf4dLcTLAp-j4MaeZjiuT3KX4JDuSAQ06W41yXrh70/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 890917755,
+          "mode": "list",
+          "cachedResultName": "En",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cqf4dLcTLAp-j4MaeZjiuT3KX4JDuSAQ06W41yXrh70/edit#gid=890917755"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Get row(s) in sheet').item.json.row_number }}",
+            "LinkedIn-Content": "={{ $json.message.content }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Category (EN)",
+              "displayName": "Category (EN)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "序号",
+              "displayName": "序号",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Topic (EN)",
+              "displayName": "Topic (EN)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "SME Impact (EN)",
+              "displayName": "SME Impact (EN)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Affected Industries (EN)",
+              "displayName": "Affected Industries (EN)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "AI Impact (EN)",
+              "displayName": "AI Impact (EN)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "AI Use Case (EN)",
+              "displayName": "AI Use Case (EN)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "System Prompt",
+              "displayName": "System Prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "User Prompt",
+              "displayName": "User Prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Blog Title",
+              "displayName": "Blog Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "FileID",
+              "displayName": "FileID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "X-Content",
+              "displayName": "X-Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "FB-Content",
+              "displayName": "FB-Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "LinkedIn-Content",
+              "displayName": "LinkedIn-Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        1296,
+        -128
+      ],
+      "id": "b037c5be-5393-4085-9693-6d0c8a927399",
+      "name": "Update row in sheet for LinkedIn",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "1ug4IE5DqnwASZ3w",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1cqf4dLcTLAp-j4MaeZjiuT3KX4JDuSAQ06W41yXrh70",
+          "mode": "list",
+          "cachedResultName": "UK_Employment_Law_Topics_2025_with_StyledPrompts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cqf4dLcTLAp-j4MaeZjiuT3KX4JDuSAQ06W41yXrh70/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 890917755,
+          "mode": "list",
+          "cachedResultName": "En",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cqf4dLcTLAp-j4MaeZjiuT3KX4JDuSAQ06W41yXrh70/edit#gid=890917755"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Get row(s) in sheet').item.json.row_number }}",
+            "X-Content": "={{ $json.message.content }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Category (EN)",
+              "displayName": "Category (EN)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "序号",
+              "displayName": "序号",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Topic (EN)",
+              "displayName": "Topic (EN)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "SME Impact (EN)",
+              "displayName": "SME Impact (EN)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Affected Industries (EN)",
+              "displayName": "Affected Industries (EN)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "AI Impact (EN)",
+              "displayName": "AI Impact (EN)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "AI Use Case (EN)",
+              "displayName": "AI Use Case (EN)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "System Prompt",
+              "displayName": "System Prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "User Prompt",
+              "displayName": "User Prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Blog Title",
+              "displayName": "Blog Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "FileID",
+              "displayName": "FileID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "X-Content",
+              "displayName": "X-Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "FB-Content",
+              "displayName": "FB-Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "LinkedIn-Content",
+              "displayName": "LinkedIn-Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        1296,
+        -320
+      ],
+      "id": "423c7796-ae0d-4371-8c75-e98a856e815d",
+      "name": "Update row in sheet for X",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "1ug4IE5DqnwASZ3w",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1cqf4dLcTLAp-j4MaeZjiuT3KX4JDuSAQ06W41yXrh70",
+          "mode": "list",
+          "cachedResultName": "UK_Employment_Law_Topics_2025_with_StyledPrompts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cqf4dLcTLAp-j4MaeZjiuT3KX4JDuSAQ06W41yXrh70/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 890917755,
+          "mode": "list",
+          "cachedResultName": "En",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cqf4dLcTLAp-j4MaeZjiuT3KX4JDuSAQ06W41yXrh70/edit#gid=890917755"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Get row(s) in sheet').item.json.row_number }}",
+            "FB-Content": "={{ $json.message.content }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Category (EN)",
+              "displayName": "Category (EN)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "序号",
+              "displayName": "序号",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Topic (EN)",
+              "displayName": "Topic (EN)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "SME Impact (EN)",
+              "displayName": "SME Impact (EN)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Affected Industries (EN)",
+              "displayName": "Affected Industries (EN)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "AI Impact (EN)",
+              "displayName": "AI Impact (EN)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "AI Use Case (EN)",
+              "displayName": "AI Use Case (EN)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "System Prompt",
+              "displayName": "System Prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "User Prompt",
+              "displayName": "User Prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Blog Title",
+              "displayName": "Blog Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "FileID",
+              "displayName": "FileID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "X-Content",
+              "displayName": "X-Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "FB-Content",
+              "displayName": "FB-Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn-Content",
+              "displayName": "LinkedIn-Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        1296,
+        64
+      ],
+      "id": "dedf5f69-28f2-4772-bb20-2557b23ee6ee",
+      "name": "Update row in sheet for FB",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "1ug4IE5DqnwASZ3w",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function markdownToPlainText(md) {\n  return md\n    // Remove fenced code blocks (```...```)\n    .replace(/```[\\s\\S]*?```/g, '')\n    // Remove inline code (`...`)\n    .replace(/`([^`]+)`/g, '$1')\n    // Remove bold and italic (**, __, *, _)\n    .replace(/(\\*\\*|__)(.*?)\\1/g, '$2')\n    .replace(/(\\*|_)(.*?)\\1/g, '$2')\n    // Remove links but keep the text [text](url)\n    .replace(/\\[([^\\]]+)]\\(([^)]+)\\)/g, '$1')\n    // Remove images ![alt](url)\n    .replace(/!\\[.*?\\]\\(.*?\\)/g, '')\n    // Remove headings (#, ##, etc.)\n    .replace(/^#+\\s+/gm, '')\n    // Remove blockquotes >\n    .replace(/^>\\s+/gm, '')\n    // Remove horizontal rules\n    .replace(/^(-{3,}|_{3,}|\\*{3,})$/gm, '')\n    // Remove list bullets (*, -, +, or numbered)\n    .replace(/^\\s*([-*+]|\\d+\\.)\\s+/gm, '')\n    // Collapse multiple newlines\n    .replace(/\\n{3,}/g, '\\n\\n')\n    // Trim whitespace\n    .trim();\n}\n\nfor (const item of $input.all()) {\n  item.json.message.content = markdownToPlainText(item.json.message.content);\n  item.json.cat='X';\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        -320
+      ],
+      "id": "ea043ca4-95f5-4974-a94c-33848a88c12b",
+      "name": "Code-4-x",
+      "notesInFlow": true,
+      "notes": "Markdown->PlainText"
+    },
+    {
+      "parameters": {
+        "jsCode": "function markdownToPlainText(md) {\n  return md\n    // Remove fenced code blocks (```...```)\n    .replace(/```[\\s\\S]*?```/g, '')\n    // Remove inline code (`...`)\n    .replace(/`([^`]+)`/g, '$1')\n    // Remove bold and italic (**, __, *, _)\n    .replace(/(\\*\\*|__)(.*?)\\1/g, '$2')\n    .replace(/(\\*|_)(.*?)\\1/g, '$2')\n    // Remove links but keep the text [text](url)\n    .replace(/\\[([^\\]]+)]\\(([^)]+)\\)/g, '$1')\n    // Remove images ![alt](url)\n    .replace(/!\\[.*?\\]\\(.*?\\)/g, '')\n    // Remove headings (#, ##, etc.)\n    .replace(/^#+\\s+/gm, '')\n    // Remove blockquotes >\n    .replace(/^>\\s+/gm, '')\n    // Remove horizontal rules\n    .replace(/^(-{3,}|_{3,}|\\*{3,})$/gm, '')\n    // Remove list bullets (*, -, +, or numbered)\n    .replace(/^\\s*([-*+]|\\d+\\.)\\s+/gm, '')\n    // Collapse multiple newlines\n    .replace(/\\n{3,}/g, '\\n\\n')\n    // Trim whitespace\n    .trim();\n}\n\nfor (const item of $input.all()) {\n  item.json.message.content = markdownToPlainText(item.json.message.content);\n  item.json.cat='LinkedIn';\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        -128
+      ],
+      "id": "c594818e-a543-4909-8b0c-47f1a481406f",
+      "name": "Code-4-LinkedIn",
+      "notesInFlow": true,
+      "notes": "Markdown->PlainText"
+    },
+    {
+      "parameters": {
+        "jsCode": "function markdownToPlainText(md) {\n  return md\n    // Remove fenced code blocks (```...```)\n    .replace(/```[\\s\\S]*?```/g, '')\n    // Remove inline code (`...`)\n    .replace(/`([^`]+)`/g, '$1')\n    // Remove bold and italic (**, __, *, _)\n    .replace(/(\\*\\*|__)(.*?)\\1/g, '$2')\n    .replace(/(\\*|_)(.*?)\\1/g, '$2')\n    // Remove links but keep the text [text](url)\n    .replace(/\\[([^\\]]+)]\\(([^)]+)\\)/g, '$1')\n    // Remove images ![alt](url)\n    .replace(/!\\[.*?\\]\\(.*?\\)/g, '')\n    // Remove headings (#, ##, etc.)\n    .replace(/^#+\\s+/gm, '')\n    // Remove blockquotes >\n    .replace(/^>\\s+/gm, '')\n    // Remove horizontal rules\n    .replace(/^(-{3,}|_{3,}|\\*{3,})$/gm, '')\n    // Remove list bullets (*, -, +, or numbered)\n    .replace(/^\\s*([-*+]|\\d+\\.)\\s+/gm, '')\n    // Collapse multiple newlines\n    .replace(/\\n{3,}/g, '\\n\\n')\n    // Trim whitespace\n    .trim();\n}\n\nfor (const item of $input.all()) {\n  item.json.message.content = markdownToPlainText(item.json.message.content);\n  item.json.cat='FB';\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        64
+      ],
+      "id": "585d8ef1-a6c5-428d-96df-786c43174585",
+      "name": "Code-4-FB",
+      "notesInFlow": true,
+      "notes": "Markdown->PlainText"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Get a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a document": {
+      "main": [
+        [
+          {
+            "node": "Summaries For X",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Polish content for LinkedIn",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Recreate For FB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summaries For X": {
+      "main": [
+        [
+          {
+            "node": "Code-4-x",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Polish content for LinkedIn": {
+      "main": [
+        [
+          {
+            "node": "Code-4-LinkedIn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recreate For FB": {
+      "main": [
+        [
+          {
+            "node": "Code-4-FB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code-4-x": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet for X",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code-4-LinkedIn": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet for LinkedIn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code-4-FB": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet for FB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c0e9138b-9fec-4f46-9056-70de44d9b58e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3f76ab92f54cb9ba3e340bfc427e6bc499c8d2bdb1c233070b099bd4bea6edfb"
+  },
+  "id": "7br0gtCgXBRG8PsD",
+  "tags": []
+}
