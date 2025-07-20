@@ -409,7 +409,8 @@
           "mappingMode": "defineBelow",
           "value": {
             "row_number": "={{ $('Get row(s) in sheet').item.json.row_number }}",
-            "X-Content": "={{ $json.message.content }}"
+            "X-Content": "={{ $json.message.content }}",
+            "Status": "Splited"
           },
           "matchingColumns": [
             "row_number"
@@ -513,7 +514,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": true
+              "removed": false
             },
             {
               "id": "Blog Title",
@@ -968,11 +969,18 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "c0e9138b-9fec-4f46-9056-70de44d9b58e",
+  "versionId": "c2564f12-d397-4fbf-8d5d-8e886d212b78",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "3f76ab92f54cb9ba3e340bfc427e6bc499c8d2bdb1c233070b099bd4bea6edfb"
   },
   "id": "7br0gtCgXBRG8PsD",
-  "tags": []
+  "tags": [
+    {
+      "createdAt": "2025-07-18T16:10:15.215Z",
+      "updatedAt": "2025-07-18T16:10:15.215Z",
+      "id": "Kfys3gdKi3GcTQ6m",
+      "name": "Prd"
+    }
+  ]
 }

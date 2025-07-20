@@ -272,7 +272,8 @@
           "value": {
             "row_number": "={{ $('Get row(s) in sheet').item.json.row_number }}",
             "Blog Title": "={{ $json.name }}",
-            "FileID": "={{ $json.id }}"
+            "FileID": "={{ $json.id }}",
+            "Status": "Generated"
           },
           "matchingColumns": [
             "row_number"
@@ -376,7 +377,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": true
+              "removed": false
             },
             {
               "id": "Blog Title",
@@ -545,7 +546,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "9ef71795-e5c5-4cff-86a4-a6cfdf5e1250",
+  "versionId": "cade8d7a-a228-473d-9ad9-92ad9d8c9a37",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "3f76ab92f54cb9ba3e340bfc427e6bc499c8d2bdb1c233070b099bd4bea6edfb"
