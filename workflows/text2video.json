@@ -1,0 +1,811 @@
+{
+  "name": "text2video",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "d47f4407-5797-446c-b689-5ebaee74b8e4",
+      "name": "Manual_Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -3904,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1u4Ircpc8e0TTSID00IrZTU82rGwEmVSi7CZ8Go1yTDI",
+          "mode": "list",
+          "cachedResultName": "tts_video_jobs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1u4Ircpc8e0TTSID00IrZTU82rGwEmVSi7CZ8Go1yTDI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1325875748,
+          "mode": "list",
+          "cachedResultName": "Jobs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1u4Ircpc8e0TTSID00IrZTU82rGwEmVSi7CZ8Go1yTDI/edit#gid=1325875748"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "status",
+              "lookupValue": "WORKING"
+            }
+          ]
+        },
+        "options": {
+          "returnAllMatches": "returnAllMatches"
+        }
+      },
+      "id": "37b145b0-605d-4224-9a4e-9c0976a2359b",
+      "name": "Sheets_Read",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        -3680,
+        320
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "1ug4IE5DqnwASZ3w",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "audio_file",
+              "stringValue": "={{ $json.id }}.{{ $json.audio_format }}"
+            },
+            {
+              "name": "CWD",
+              "stringValue": "/data/text2video"
+            },
+            {
+              "name": "text_file",
+              "stringValue": "={{ $json.id }}.txt"
+            },
+            {
+              "name": "author_file",
+              "stringValue": "={{ $json.id }}-author.txt"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ba908d11-d682-49f6-8bf5-75f5a8606438",
+      "name": "Set_Defaults",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -3456,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "resource": "file",
+        "path": "/data/text2video",
+        "options": {
+          "fileName": "={{ $('Sheets_Read').item.json.id }}.{{ $('Sheets_Read').item.json.audio_format }}"
+        }
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        -3008,
+        224
+      ],
+      "id": "7e508b50-1851-4e2b-abcb-2a06313cd4be",
+      "name": "Upload a file",
+      "alwaysOutputData": false,
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "DtNJhImTwNaLl69m",
+          "name": "SSH 18.171.230.55 Password account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/audio/speech",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "gpt-4o-mini-tts"
+            },
+            {
+              "name": "voice",
+              "value": "={{ $json.voice }}"
+            },
+            {
+              "name": "input",
+              "value": "={{ $json.text }}"
+            },
+            {
+              "name": "instructions",
+              "value": "Accent/Affect: Warm, refined, and gently instructive, reminiscent of a friendly mind instructor with a decent British accent.\n\nTone: Calm, encouraging, and articulate, clearly describing each step with patience.\n\nPacing: Slow and deliberate, pausing often to allow the listener to follow instructions comfortably.\n\nEmotion: Cheerful, supportive, and pleasantly enthusiastic; convey genuine enjoyment and appreciation of art.\n\nPronunciation: Clearly articulate artistic terminology (e.g., \"brushstrokes,\" \"landscape,\" \"palette\") with gentle emphasis.\n\nPersonality Affect: Friendly and approachable with a hint of sophistication; speak confidently and reassuringly, guiding users through each painting step patiently and warmly."
+            },
+            {
+              "name": "response_format",
+              "value": "={{ $json.audio_format }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3232,
+        320
+      ],
+      "id": "646f8a40-1623-4efe-9b04-5e45fbb4140d",
+      "name": "OpenAI TTS",
+      "credentials": {
+        "openAiApi": {
+          "id": "00jAlINW73KFM6AA",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "=AUDIO=\"{{ $('Set_Defaults').item.json.CWD }}/{{ $('Set_Defaults').item.json.audio_file }}\" && DUR=$(ffprobe -v error -show_entries format=duration -of default=nokey=1:noprint_wrappers=1 \"$AUDIO\") && printf \"%d\" \"$(awk -v d=\"$DUR\" 'BEGIN{printf(\"%.0f\", d*1000)}')\" ",
+        "cwd": "={{ $('Set_Defaults').item.json.CWD }}"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        -2784,
+        224
+      ],
+      "id": "c7ee2d29-48bd-4e56-bbcf-4372e577ab98",
+      "name": "Get Audio length in ms",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "DtNJhImTwNaLl69m",
+          "name": "SSH 18.171.230.55 Password account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "=cat > \"{{ $json.text_file }}\" <<EOF\n{{ $json.text_to_draw }}\nEOF\n\ncat > \"{{ $json.author_file }}\" <<EOF\n{{ $json.text_to_draw_credit }}      \nEOF\n\n",
+        "cwd": "={{ $json.CWD }}"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        -2736,
+        480
+      ],
+      "id": "b9f1280c-7835-4781-892b-92c863d7fef2",
+      "name": "Write Text",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "DtNJhImTwNaLl69m",
+          "name": "SSH 18.171.230.55 Password account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "=set -Eeuo pipefail\n\nWD=\"{{ $json.CWD }}\"\nAUDIO=\"$WD/{{ $json.audio_file }}\"\nOUT=\"$WD/{{ $json.id }}.mp4\"\n\nW={{$json.width || 1920}}\nH={{$json.height || 1080}}\nFPS={{$json.fps || 30}}\nBG={{$json.bg_value || \"0x0f1116\"}}\nFONT=\"{{ $json.font_path || \"/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf\" }}\"\nFONT_AUTHOR=\"{{ $json.font_path_author || \"/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf\" }}\"\nFS={{$json.font_size || 48}}\nLS={{$json.line_spacing || 10}}\nMARG={{$json.margin_pct || 10}}\nBOXCOLOR=\"0x000000AA\"\nBGVID=\"$WD/bg_vids/{{ $json.bg_vid }}\"\nCOPYRIGHT_FS=36\n\n#FONT=\"/usr/share/fonts/dejavu-sans-fonts/DejaVuSansCondensed-Bold.ttf\"\n\n# ---- command ----\nffmpeg -y \\\n  -stream_loop -1 -i \"$BGVID\" \\\n  -i \"$AUDIO\" \\\n  -filter_complex \"[0:v]scale=w=${W}:h=${H}:force_original_aspect_ratio=increase,setsar=1,crop=${W}:${H}:(iw-${W})/2:(ih-${H})/2,format=yuv420p[bg];\\\n[bg]drawtext=fontfile=${FONT}:textfile=${WD}/{{ $json.text_file }}:text_shaping=1:\\\nfontsize=${FS}:fontcolor=white:line_spacing=${LS}:\\\nx=(w-text_w)/2:y=h*0.38196601125-text_h/2:\\\nbox=0:boxcolor=${BOXCOLOR}:boxborderw=${MARG},\\\nformat=yuv420p[v1];\\\n[v1]drawtext=fontfile=${FONT_AUTHOR}:textfile=${WD}/{{ $json.author_file }}:text_shaping=1:\\\nfontsize=${FS}-16:fontcolor=white:line_spacing=12:\\\nx=(w-text_w)/2:y=h*0.61803398875+text_h*2:\\\nbox=0:boxcolor=${BOXCOLOR}:boxborderw=${MARG}[v2];\\\n[v2]drawtext=fontfile=${FONT}:textfile=${WD}/copyright.txt:text_shaping=1:\\\nfontsize=${COPYRIGHT_FS}:fontcolor=white:line_spacing=12:\\\nx=${MARG}:y=h-${MARG}-text_h:\\\nbox=0:boxcolor=${BOXCOLOR}:boxborderw=${MARG}[v]\" \\\n  -map \"[v]\" -map 1:a \\\n  -c:v libx264 -crf 20 -preset veryfast -pix_fmt yuv420p \\\n  -c:a aac -b:a 128k \\\n  -r ${FPS} -shortest -movflags +faststart \"$OUT\"",
+        "cwd": "={{ $json.CWD }}"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        -2112,
+        320
+      ],
+      "id": "be5bca94-69b3-479f-a5f7-7517492d8649",
+      "name": "Execute a command",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "DtNJhImTwNaLl69m",
+          "name": "SSH 18.171.230.55 Password account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\nreturn $('Set_Defaults').all().map((item, i) => {\n  const prev = item.json;     // 之前节点的上下文\n  const out = $input.first().json.stdout;         // SSH 输出\n  const duration_ms =out;              // 举例：stdout 是毫秒数\n  item.json = { ...prev, duration_ms };                      // 合并回去\n  return item;\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2560,
+        224
+      ],
+      "id": "45a857b5-2c45-4249-bc32-6664919bbf10",
+      "name": "update duration ms"
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch"
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -2336,
+        320
+      ],
+      "id": "a4a8bf6f-209d-4b9a-be37-43978bdfa4dc",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1u4Ircpc8e0TTSID00IrZTU82rGwEmVSi7CZ8Go1yTDI",
+          "mode": "list",
+          "cachedResultName": "tts_video_jobs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1u4Ircpc8e0TTSID00IrZTU82rGwEmVSi7CZ8Go1yTDI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1325875748,
+          "mode": "list",
+          "cachedResultName": "Jobs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1u4Ircpc8e0TTSID00IrZTU82rGwEmVSi7CZ8Go1yTDI/edit#gid=1325875748"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "updated_at": "={{ $now }}",
+            "status": "DONE"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "text_to_draw",
+              "displayName": "text_to_draw",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "text_zh",
+              "displayName": "text_zh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "lang",
+              "displayName": "lang",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "voice",
+              "displayName": "voice",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "audio_format",
+              "displayName": "audio_format",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "bg_type",
+              "displayName": "bg_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "bg_value",
+              "displayName": "bg_value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "bg_image_drive_id",
+              "displayName": "bg_image_drive_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "bg_vid",
+              "displayName": "bg_vid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "width",
+              "displayName": "width",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "height",
+              "displayName": "height",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "fps",
+              "displayName": "fps",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "font_path",
+              "displayName": "font_path",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "font_size",
+              "displayName": "font_size",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "line_spacing",
+              "displayName": "line_spacing",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "margin_pct",
+              "displayName": "margin_pct",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "audio_drive_id",
+              "displayName": "audio_drive_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "video_drive_id",
+              "displayName": "video_drive_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "duration_ms",
+              "displayName": "duration_ms",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "error_msg",
+              "displayName": "error_msg",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1664,
+        192
+      ],
+      "id": "e3e340e0-6c22-4d7c-98d0-cef09f7e804e",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "1ug4IE5DqnwASZ3w",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\nreturn $('Merge').all().map((item, i) => {\n  const prev = item.json;     // 之前节点的上下文\n  \n  item.json = { ...prev };                      // 合并回去\n  return item;\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1888,
+        320
+      ],
+      "id": "7a0ac0ac-9f79-4af2-9e23-3e25a16f4778",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "name": "={{ $json.id }}.mp4",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1wOtVTTLijYM1DksMMWcqCq4HWLBv6fhl",
+          "mode": "list",
+          "cachedResultName": "vids",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1wOtVTTLijYM1DksMMWcqCq4HWLBv6fhl"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1440,
+        416
+      ],
+      "id": "69e3c874-1687-44ca-ae42-05df57ce35a1",
+      "name": "Upload to google drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Di2HPO2xqxMJVhhv",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "resource": "file",
+        "operation": "download",
+        "path": "={{ $json.CWD }}/{{ $json.id }}.mp4",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        -1664,
+        416
+      ],
+      "id": "41b75176-375b-4615-8cd9-4dffb7b52a54",
+      "name": "Download a file",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "DtNJhImTwNaLl69m",
+          "name": "SSH 18.171.230.55 Password account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual_Trigger": {
+      "main": [
+        [
+          {
+            "node": "Sheets_Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheets_Read": {
+      "main": [
+        [
+          {
+            "node": "Set_Defaults",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set_Defaults": {
+      "main": [
+        [
+          {
+            "node": "OpenAI TTS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI TTS": {
+      "main": [
+        [
+          {
+            "node": "Upload a file",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Write Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload a file": {
+      "main": [
+        [
+          {
+            "node": "Get Audio length in ms",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Audio length in ms": {
+      "main": [
+        [
+          {
+            "node": "update duration ms",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "update duration ms": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Text": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Execute a command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a command": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Download a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download a file": {
+      "main": [
+        [
+          {
+            "node": "Upload to google drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "75ba73c9-50bf-4174-95a9-0545b9fce30e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3f76ab92f54cb9ba3e340bfc427e6bc499c8d2bdb1c233070b099bd4bea6edfb"
+  },
+  "id": "pIMH3mWU9FjtL3hC",
+  "tags": [
+    {
+      "createdAt": "2025-08-29T22:31:28.310Z",
+      "updatedAt": "2025-08-29T22:31:28.310Z",
+      "id": "ZS3fwVlzLCe85pGD",
+      "name": "video"
+    },
+    {
+      "createdAt": "2025-08-29T22:31:28.318Z",
+      "updatedAt": "2025-08-29T22:31:28.318Z",
+      "id": "yp0aVmtgezBrIqFn",
+      "name": "tts"
+    }
+  ]
+}

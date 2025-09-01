@@ -1,0 +1,594 @@
+{
+  "name": "GenTitle4YT",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        32,
+        -328
+      ],
+      "id": "89d122af-6506-40f3-b8ad-2334a9534343",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1u4Ircpc8e0TTSID00IrZTU82rGwEmVSi7CZ8Go1yTDI",
+          "mode": "list",
+          "cachedResultName": "tts_video_jobs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1u4Ircpc8e0TTSID00IrZTU82rGwEmVSi7CZ8Go1yTDI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1325875748,
+          "mode": "list",
+          "cachedResultName": "Jobs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1u4Ircpc8e0TTSID00IrZTU82rGwEmVSi7CZ8Go1yTDI/edit#gid=1325875748"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "status",
+              "lookupValue": "YT"
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": false
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        256,
+        -328
+      ],
+      "id": "82c727c5-fffe-487f-a29a-b3a8fde91bc7",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "1ug4IE5DqnwASZ3w",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-5-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are **YouTubeMetaGen**, a specialist that converts any user-provided idea/notes/transcript into *publish-ready* YouTube metadata.\n**Return JSON only**—a single UTF-8 object with the exact keys: `title`, `description`, `tags`. No prose, no code fences.\n\n## Objectives\n\n1. Create a concise, searchable **title** that humans want to click and algorithms can understand.\n2. Write a scannable **description** that hooks in the first 150 characters, summarises value, and drives action.\n3. Generate focused **tags** to improve discoverability.\n\n## Input Handling\n\n* The user may paste: a topic, outline, script, transcript, quote, or bullet points.\n* **Detect language.** If the input is bilingual, keep the output bilingual with **English first**. Otherwise, use the input language.\n* If the user supplies keywords, audience, tone, links, or CTAs, incorporate them. If not, infer sensible defaults.\n\n## Title Rules\n\n* ≤ 70 characters preferred (hard cap 100).\n* Put the **primary keyword** within the first 40 characters.\n* Clarity > clickbait; no ALL CAPS; at most one emoji, optional.\n* Use separators (“:”, “—”, “|”) sparingly; avoid keyword stuffing.\n* If the content is a quote, keep the author; use quotation marks only if it improves clarity.\n\n## Description Rules\n\n* Start with a **hook** (first \\~150 chars should stand alone).\n* 1–3 short paragraphs + optional bullet list of key takeaways.\n* If timestamps/chapters are provided, format them (`00:00 Intro`, etc.).\n* Include a clear CTA (subscribe/next video/newsletter), and optionally links/placeholders if provided.\n* Add **3–5 topical hashtags** at the end of the description line (not in tags), optional and relevant.\n* No hypey promises, medical/financial claims, or misleading statements.\n\n## Tags Rules\n\n* Provide **10–20** tags as an **array of strings**.\n* No `#` symbols in tags (YouTube uses plain keywords).\n* Order from primary keywords → secondary → long-tail variations → entities (people/brands) if relevant.\n* Keep each tag concise (≤ 30 characters) and avoid duplicates.\n\n## SEO & Audience\n\n* Infer the **search intent** and the **target audience** (e.g., founders, students, developers) and reflect it in title & description.\n* Use natural language; avoid repeating exact keywords more than necessary.\n\n## Formatting Requirements\n\n* Output **only**:\n\n```json\n{\n  \"title\": \"string\",\n  \"description\": \"string\",\n  \"tags\": [\"string\", \"...\"]\n}\n```\n\n* Ensure valid JSON: no trailing commas, properly escaped quotes/newlines.\n\n## Edge Cases\n\n* If input is extremely short, infer a clear angle (who it’s for, why it matters).\n* If a direct quote is provided, attribute it correctly.\n* If sensitive topics appear, keep neutral, informative tone and add a brief responsibility note if appropriate.\n\n## Quality Bar\n\n* Would a human immediately understand the video’s value from the title + first two lines? If not, revise before output.\n* Avoid clichés and generic filler; every word should earn its place.\n",
+              "role": "system"
+            },
+            {
+              "content": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        928,
+        -400
+      ],
+      "id": "66247a37-69f2-4532-a395-0889e92ab4cf",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "Lvcy3OQ60HAX0csy",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\n\nreturn $('PassData').all().map((item, i) => {\n  const prev = item.json;     // 之前节点的上下文\n  const content_json = JSON.parse($input.all().at(i).json.message.content);\n  const YT_title =content_json.title;\n  const YT_description =content_json.description;\n  const YT_tags =content_json.tags;\n  item.json = { ...prev, YT_title, YT_description, YT_tags };                      // 合并回去\n  return item;\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        -400
+      ],
+      "id": "38740f88-796a-4a37-a5d6-49f0518ad804",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1u4Ircpc8e0TTSID00IrZTU82rGwEmVSi7CZ8Go1yTDI",
+          "mode": "list",
+          "cachedResultName": "tts_video_jobs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1u4Ircpc8e0TTSID00IrZTU82rGwEmVSi7CZ8Go1yTDI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1325875748,
+          "mode": "list",
+          "cachedResultName": "Jobs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1u4Ircpc8e0TTSID00IrZTU82rGwEmVSi7CZ8Go1yTDI/edit#gid=1325875748"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "YT_title": "={{ $json.YT_title }}",
+            "YT_description": "={{ $json.YT_description }}",
+            "YT_tags": "={{ $json.YT_tags.join(\"\\n\") }}",
+            "status": "DONE"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "text_to_draw",
+              "displayName": "text_to_draw",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "text_to_draw_credit",
+              "displayName": "text_to_draw_credit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "text_zh",
+              "displayName": "text_zh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "lang",
+              "displayName": "lang",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "voice",
+              "displayName": "voice",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "audio_format",
+              "displayName": "audio_format",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "bg_vid",
+              "displayName": "bg_vid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "width",
+              "displayName": "width",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "height",
+              "displayName": "height",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "fps",
+              "displayName": "fps",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "font_path",
+              "displayName": "font_path",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "font_path_author",
+              "displayName": "font_path_author",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "font_size",
+              "displayName": "font_size",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "line_spacing",
+              "displayName": "line_spacing",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "margin_pct",
+              "displayName": "margin_pct",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "xhs",
+              "displayName": "xhs",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "YT",
+              "displayName": "YT",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "xhs_title",
+              "displayName": "xhs_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "YT_title",
+              "displayName": "YT_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "YT_description",
+              "displayName": "YT_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "YT_tags",
+              "displayName": "YT_tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "audio_drive_id",
+              "displayName": "audio_drive_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "video_drive_id",
+              "displayName": "video_drive_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "duration_ms",
+              "displayName": "duration_ms",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "error_msg",
+              "displayName": "error_msg",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1504,
+        -328
+      ],
+      "id": "1a8a0815-59bb-49cf-b6ca-6647850c3f50",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "1ug4IE5DqnwASZ3w",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        480,
+        -328
+      ],
+      "id": "5875b086-c4f1-4e07-8ed4-ab001f8f8b88",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        704,
+        -400
+      ],
+      "id": "f040ea88-2698-4836-b04d-e9f493a1f412",
+      "name": "PassData"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "PassData",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PassData": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "8ddd4c6d-d873-4e6c-a75f-ab8286de9e73",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3f76ab92f54cb9ba3e340bfc427e6bc499c8d2bdb1c233070b099bd4bea6edfb"
+  },
+  "id": "VU5g6UQLvanC5J4h",
+  "tags": [
+    {
+      "name": "YouTube",
+      "id": "wfUyA9109E4eI3Kd",
+      "createdAt": "2025-09-01T14:16:28.168Z",
+      "updatedAt": "2025-09-01T14:16:28.168Z"
+    }
+  ]
+}
